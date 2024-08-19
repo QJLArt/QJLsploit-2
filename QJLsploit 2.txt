@@ -1,0 +1,199 @@
+-- Создаем основной Frame для разделов
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 350, 0, 250)
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+-- Создаем разделы
+local sectionFrame = Instance.new("Frame")
+sectionFrame.Size = UDim2.new(0, 100, 1, 0)
+sectionFrame.Position = UDim2.new(0, 0, 0, 0)
+sectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+sectionFrame.BorderSizePixel = 0
+sectionFrame.Parent = mainFrame
+
+-- Кнопка для раздела Main
+local mainButton = Instance.new("TextButton")
+mainButton.Size = UDim2.new(1, 0, 0, 50)
+mainButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainButton.Text = "Main"
+mainButton.Parent = sectionFrame
+
+-- Кнопка для раздела Inject
+local injectButton = Instance.new("TextButton")
+injectButton.Size = UDim2.new(1, 0, 0, 50)
+injectButton.Position = UDim2.new(0, 0, 0, 50)
+injectButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+injectButton.Text = "Inject"
+injectButton.Parent = sectionFrame
+
+-- Frame для содержимого
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, -100, 1, 0)
+contentFrame.Position = UDim2.new(0, 100, 0, 0)
+contentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+contentFrame.BorderSizePixel = 0
+contentFrame.Parent = mainFrame
+
+-- Функция для переключения между разделами
+local function showSection(section)
+    for _, child in ipairs(contentFrame:GetChildren()) do
+        if child:IsA("Frame") then
+            child.Visible = false
+        end
+    end
+    section.Visible = true
+end
+
+-- Создаем Frame для Main
+local mainSection = Instance.new("Frame")
+mainSection.Size = UDim2.new(1, 0, 1, 0)
+mainSection.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainSection.Parent = contentFrame
+
+-- Создаем Frame для Inject
+local injectSection = Instance.new("Frame")
+injectSection.Size = UDim2.new(1, 0, 1, 0)
+injectSection.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+injectSection.Visible = false
+injectSection.Parent = contentFrame
+
+-- Добавляем функции в раздел Main
+local function fling()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+    -- Вращение и отталкивание
+    while true do
+        humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, math.rad(5), 0)
+        for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character then
+                local otherHumanoidRootPart = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if otherHumanoidRootPart and (humanoidRootPart.Position - otherHumanoidRootPart.Position).magnitude < 10 then
+                    otherHumanoidRootPart.Velocity = (otherHumanoidRootPart.Position - humanoidRootPart.Position).unit * 50
+                end
+            end
+        end
+        wait(0.1)
+    end
+end
+
+-- Переменная для отслеживания состояния noclip
+local noclipEnabled = false
+
+local function toggleNoclip()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    noclipEnabled = not noclipEnabled -- Переключаем состояние
+
+    for _, part in ipairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = not noclipEnabled -- Изменяем свойство CanCollide
+        end
+    end
+end
+
+-- Кнопки для функций в разделе Main
+local flingButton = Instance.new("TextButton")
+flingButton.Size = UDim2.new(1, 0, 0, 50)
+flingButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+flingButton.Text = "Fling"
+flingButton.Parent = mainSection
+flingButton.MouseButton1Click:Connect(fling)
+
+local noclipButton = Instance.new("TextButton")
+noclipButton.Size = UDim2.new(1, 0, 0, 50)
+noclipButton.Position = UDim2.new(0, 0, 0, 50)
+noclipButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+noclipButton.Text = "Noclip"
+noclipButton.Parent = mainSection
+noclipButton.MouseButton1Click:Connect(toggleNoclip)
+
+-- Обработчики нажатий для переключения разделов
+mainButton.MouseButton1Click:Connect(function()
+    showSection(mainSection)
+end)
+
+injectButton.MouseButton1Click:Connect(function()
+    showSection(injectSection)
+end)
+
+-- Кнопки и поле ввода для инжекции в injectSection
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 300, 0, 120)
+textBox.Position = UDim2.new(0.5, -150, 0, 50)
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+textBox.BorderSizePixel = 0
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.Font = Enum.Font.Gotham
+textBox.PlaceholderText = "Введите ваш скрипт сюда..."
+textBox.PlaceholderColor3 = Color3.fromRGB(200, 200, 200)
+textBox.ClearTextOnFocus = false
+textBox.MultiLine = true
+textBox.TextWrapped = true
+textBox.TextXAlignment = Enum.TextXAlignment.Left
+textBox.TextYAlignment = Enum.TextYAlignment.Top
+textBox.TextSize = 14
+textBox.Parent = injectSection
+
+local executeButton = Instance.new("TextButton")
+executeButton.Size = UDim2.new(0, 135, 0, 30)
+executeButton.Position = UDim2.new(0.5, -150, 1, -40)
+executeButton.BackgroundColor3 = Color3.fromRGB(30, 144, 255)
+executeButton.BorderSizePixel = 0
+executeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+executeButton.Text = "Execute"
+executeButton.Font = Enum.Font.GothamBold
+executeButton.TextScaled = true
+executeButton.Parent = injectSection
+
+local clearButton = Instance.new("TextButton")
+clearButton.Size = UDim2.new(0, 135, 0, 30)
+clearButton.Position = UDim2.new(0.5, 15, 1, -40)
+clearButton.BackgroundColor3 = Color3.fromRGB(30, 144, 255)
+clearButton.BorderSizePixel = 0
+clearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+clearButton.Text = "Очистить"
+clearButton.Font = Enum.Font.GothamBold
+clearButton.TextScaled = true
+clearButton.Parent = injectSection
+
+-- Создаем Label для сообщений
+local messageLabel = Instance.new("TextLabel")
+messageLabel.Size = UDim2.new(0, 300, 0, 30)
+messageLabel.Position = UDim2.new(0.5, -150, 1, -80)
+messageLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+messageLabel.BorderSizePixel = 0
+messageLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+messageLabel.Font = Enum.Font.Gotham
+messageLabel.Text = ""
+messageLabel.TextScaled = true
+messageLabel.Parent = injectSection
+
+-- Обработчики для кнопок Execute и Clear
+executeButton.MouseButton1Click:Connect(function()
+    local scriptSource = textBox.Text
+    if scriptSource == "" then
+        messageLabel.Text = "Ошибка: Поле ввода пусто!"
+        return
+    end
+
+    local success, err = pcall(function()
+        loadstring(scriptSource)()
+    end)
+
+    if success then
+        messageLabel.Text = "Скрипт успешно инжектирован!"
+        textBox.Text = "" -- Очищаем текстовое поле
+    else
+        messageLabel.Text = "Ошибка при инжекте скрипта: " .. err
+    end
+end)
+
+clearButton.MouseButton1Click:Connect(function()
+    textBox.Text = "" -- Очищаем текстовое поле
+end)
